@@ -1,17 +1,15 @@
-import React, { useState, useRef } from 'react';
+import React from 'react';
 import './App.css';
-import Editor from './components/Editor';
 import Sidebar from './components/Sidebar';
 import MainContainer from './components/MainContainer';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import Header from './components/Header';
-import { Grid, Container } from '@mui/material';
-import ExampleMultipage from './Example';
+import { Grid } from '@mui/material';
+
 function App() {
   return (
     <>
-      {/* <ExampleMultipage /> */}
       <Header />
       <DndProvider backend={HTML5Backend}>
         <Grid container spacing={2} sx={{ mt: 6 }}>

@@ -19,13 +19,6 @@ const Editor = ({ content }) => {
         placeholder='Write something...'
         modules={{ toolbar: false }}
       />
-      {/* <div>
-        <h3>Output:</h3>
-        <div
-          className="output"
-          dangerouslySetInnerHTML={{ __html: editorValue }}
-        />
-      </div> */}
     </div>
   );
 };

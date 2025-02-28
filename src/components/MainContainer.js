@@ -1,18 +1,16 @@
 import React, { useState, useRef } from 'react';
 import { useDrop } from 'react-dnd';
 import { ItemTypes } from './Sidebar';
-import { Grid, Box, Button, TextField } from '@mui/material';
-import { usePDF } from 'react-to-pdf';
-import generatePDF, { Resolution, Margin, Options } from 'react-to-pdf';
+import { Grid, Box, Button } from '@mui/material';
 import Editor from './Editor';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+
 // A4 Page Styling
 const A4_SIZE = {
   width: '210mm',
   height: '297mm',
   backgroundColor: '#fff',
-  // border: '1px solid #ddd',
   padding: '64px',
   margin: '16px auto',
   display: 'flex',
@@ -28,15 +26,9 @@ const SCROLLABLE_CONTAINER = {
   backgroundColor: '#f0f0f0',
 };
 
-// Section Style (Ensures Equal Distribution)
 const SECTION_STYLE = {
   border: '1px solid #ddd',
-  // padding: '16px',
-  // textAlign: 'center',
   minHeight: '100px',
-  // display: 'flex',
-  // alignItems: 'center',
-  // justifyContent: 'center',
   backgroundColor: '#fff',
   height: '100%', // Ensures equal height
 };
@@ -49,51 +41,14 @@ const createEmptySections = () =>
     text: '',
   }));
 
-const options: Options = {
-  filename: 'advanced-example.pdf',
-  method: 'save',
-  // default is Resolution.MEDIUM = 3, which should be enough, higher values
-  // increases the image quality but also the size of the PDF, so be careful
-  // using values higher than 10 when having multiple pages generated, it
-  // might cause the page to crash or hang.
-  resolution: Resolution.EXTREME,
-  page: {
-    // margin is in MM, default is Margin.NONE = 0
-    margin: Margin.SMALL,
-    // default is 'A4'
-    format: 'letter',
-    // default is 'portrait'
-    orientation: 'landscape',
-  },
-  canvas: {
-    // default is 'image/jpeg' for better size performance
-    mimeType: 'image/jpeg',
-    qualityRatio: 1,
-  },
-  // Customize any value passed to the jsPDF instance and html2canvas
-  // function. You probably will not need this and things can break,
-  // so use with caution.
-  overrides: {
-    // see https://artskydj.github.io/jsPDF/docs/jsPDF.html for more options
-    pdf: {
-      compress: true,
-    },
-    // see https://html2canvas.hertzen.com/configuration for more options
-    canvas: {
-      useCORS: true,
-    },
-  },
-};
-
 const MainContainer = () => {
   const [pages, setPages] = useState([{ id: 1, sections: createEmptySections() }]);
   const pdfRef = useRef();
-  const { toPDF, targetRef } = usePDF({ filename: 'report.pdf', ref: pdfRef });
-
   const pageRefs = useRef([]); // Store refs for each page
 
   // Initialize refs for each page
   pageRefs.current = pages.map((_, i) => pageRefs.current[i] || React.createRef());
+
   // Add a new page with blank sections
   const addPage = () => {
     setPages((prevPages) => [
@@ -101,6 +56,7 @@ const MainContainer = () => {
       { id: prevPages.length + 1, sections: createEmptySections() },
     ]);
   };
+
   const updateSectionText = (pageId, sectionId, newText, isDroppedContent) => {
     setPages((prevPages) =>
       prevPages.map((page) =>
@@ -147,6 +103,7 @@ const MainContainer = () => {
 
     pdf.save('report.pdf');
   };
+
   return (
     <Box sx={SCROLLABLE_CONTAINER}>
       {/* Download Button */}
@@ -157,7 +114,7 @@ const MainContainer = () => {
       </Box>
 
       {/* PDF Container */}
-      <Box ref={targetRef}>
+      <Box>
         {pages.map((page, index) => (
           <Box key={page.id} ref={pageRefs.current[index]} sx={A4_SIZE} className='pdf-page'>
             <Grid container spacing={2} sx={{ height: '100%' }}>
@@ -216,38 +173,12 @@ const DroppableSection = ({ section, updateSectionText }) => {
         minHeight: '150px', // Ensure it does not collapse
         display: 'flex',
         alignItems: 'stretch',
-        // height: '450px',
       }}
     >
       {section.content ? (
         <div dangerouslySetInnerHTML={{ __html: section.content }} />
       ) : (
         <Editor content={section.content} />
-        // <TextField
-        //   fullWidth
-        //   multiline
-        //   value={section.text}
-        //   onChange={(e) => updateSectionText(section.id, e.target.value, false)}
-        //   placeholder='Type here or drop content'
-        //   variant='standard'
-        //   InputProps={{
-        //     disableUnderline: true,
-        //     sx: {
-        //       height: '100%',
-        //       p: 1,
-        //       display: 'flex',
-        //       alignItems: 'flex-start', // Ensures text starts from the top-left
-        //     },
-        //   }}
-        //   sx={{
-        //     width: '100%',
-        //     height: '100%',
-        //     display: 'flex',
-        //     flexDirection: 'column',
-        //     justifyContent: 'flex-start', // Align text to top
-        //     alignItems: 'stretch',
-        //   }}
-        // />
       )}
     </Box>
   );
