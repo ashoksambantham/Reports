@@ -3,8 +3,15 @@ import { useDrop } from 'react-dnd';
 import { ItemTypes } from './Sidebar';
 import { Grid, Box, Button } from '@mui/material';
 import Editor from './Editor';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  PDFDownloadLink,
+  Image,
+} from '@react-pdf/renderer';
 
 // A4 Page Styling
 const A4_SIZE = {
@@ -32,6 +39,31 @@ const SECTION_STYLE = {
   backgroundColor: '#fff',
   height: '100%', // Ensures equal height
 };
+
+// PDF Styles
+
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: 'row',
+    flexWrap: 'wrap', // Ensures 2 columns, 4 rows layout
+    padding: 20,
+  },
+  section: {
+    width: '50%', // 2 columns
+    height: '25%', // 4 rows
+    padding: 10,
+    border: '1px solid #ddd',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 12,
+  },
+  image: {
+    width: 100,
+    height: 100,
+  },
+});
 
 // Generate Empty Sections
 const createEmptySections = () =>
@@ -78,39 +110,20 @@ const MainContainer = () => {
     );
   };
 
-  const downloadPdf = async () => {
-    const pdf = new jsPDF('p', 'mm', 'a4'); // A4 format in portrait mode
-    const imgWidth = 210; // A4 width in mm
-    const pageHeight = 297; // A4 height in mm
-
-    for (let i = 0; i < pages.length; i++) {
-      const pageElement = pageRefs.current[i].current;
-
-      if (!pageElement) continue;
-
-      const canvas = await html2canvas(pageElement, {
-        scale: 2, // Increase resolution
-        useCORS: true, // Allow cross-origin images
-        allowTaint: true, // Allow tainted images
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      const imgHeight = (canvas.height * imgWidth) / canvas.width; // Maintain aspect ratio
-
-      if (i > 0) pdf.addPage(); // Add new page for each iteration
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-    }
-
-    pdf.save('report.pdf');
-  };
-
   return (
     <Box sx={SCROLLABLE_CONTAINER}>
       {/* Download Button */}
       <Box textAlign='center' mb={2}>
-        <Button variant='contained' color='primary' onClick={downloadPdf}>
+        {/* <Button variant='contained' color='primary' onClick={downloadPdf}>
           Download as PDF
-        </Button>
+        </Button> */}
+        <PDFDownloadLink document={<MyPDF pages={pages} />} fileName='document.pdf'>
+          {({ loading }) => (
+            <Button variant='contained' color='primary'>
+              {loading ? 'Generating PDF...' : 'Download as PDF'}
+            </Button>
+          )}
+        </PDFDownloadLink>
       </Box>
 
       {/* PDF Container */}
@@ -142,7 +155,6 @@ const MainContainer = () => {
 };
 
 const DroppableSection = ({ section, updateSectionText }) => {
-  console.log(section, 'Section');
   const [{ isOver, canDrop }, drop] = useDrop(() => ({
     accept: [ItemTypes.TEXT, ItemTypes.IMAGE, ItemTypes.GRAPH],
     drop: (item) => {
@@ -183,5 +195,29 @@ const DroppableSection = ({ section, updateSectionText }) => {
     </Box>
   );
 };
+
+// PDF Document Component
+const MyPDF = ({ pages }) => (
+  <Document>
+    {pages.map((page, pageIndex) => (
+      <Page size='A4' style={styles.page} key={pageIndex}>
+        {page.sections.map((section) => (
+          <View key={section.id} style={styles.section}>
+            {/* Render Text */}
+            {section.text && <Text style={styles.text}>{section.text}</Text>}
+
+            {/* Render Image (if exists) */}
+            {section.content && section.content.includes('<img') && (
+              <Image
+                src={section.content.match(/src="([^"]+)"/)[1]} // Extract image URL
+                style={styles.image}
+              />
+            )}
+          </View>
+        ))}
+      </Page>
+    ))}
+  </Document>
+);
 
 export default MainContainer;
