@@ -12,7 +12,7 @@ import {
   PDFDownloadLink,
   Image,
 } from '@react-pdf/renderer';
-
+import MyPDF from '../templates/template1';
 // A4 Page Styling
 const A4_SIZE = {
   width: '210mm',
@@ -40,31 +40,6 @@ const SECTION_STYLE = {
   height: '100%', // Ensures equal height
 };
 
-// PDF Styles
-
-const styles = StyleSheet.create({
-  page: {
-    flexDirection: 'row',
-    flexWrap: 'wrap', // Ensures 2 columns, 4 rows layout
-    padding: 20,
-  },
-  section: {
-    width: '50%', // 2 columns
-    height: '25%', // 4 rows
-    padding: 10,
-    border: '1px solid #ddd',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 12,
-  },
-  image: {
-    width: 100,
-    height: 100,
-  },
-});
-
 // Generate Empty Sections
 const createEmptySections = () =>
   Array.from({ length: 8 }, (_, i) => ({
@@ -90,6 +65,7 @@ const MainContainer = () => {
   };
 
   const updateSectionText = (pageId, sectionId, newText, isDroppedContent) => {
+    console.log(pageId, sectionId, newText, isDroppedContent, 'isDroppedContent');
     setPages((prevPages) =>
       prevPages.map((page) =>
         page.id === pageId
@@ -190,34 +166,15 @@ const DroppableSection = ({ section, updateSectionText }) => {
       {section.content ? (
         <div dangerouslySetInnerHTML={{ __html: section.content }} />
       ) : (
-        <Editor content={section.content} />
+        <Editor
+          content={section.content}
+          updateSectionText={updateSectionText}
+          pageId={section.pageId}
+          sectionId={section.id}
+        />
       )}
     </Box>
   );
 };
-
-// PDF Document Component
-const MyPDF = ({ pages }) => (
-  <Document>
-    {pages.map((page, pageIndex) => (
-      <Page size='A4' style={styles.page} key={pageIndex}>
-        {page.sections.map((section) => (
-          <View key={section.id} style={styles.section}>
-            {/* Render Text */}
-            {section.text && <Text style={styles.text}>{section.text}</Text>}
-
-            {/* Render Image (if exists) */}
-            {section.content && section.content.includes('<img') && (
-              <Image
-                src={section.content.match(/src="([^"]+)"/)[1]} // Extract image URL
-                style={styles.image}
-              />
-            )}
-          </View>
-        ))}
-      </Page>
-    ))}
-  </Document>
-);
 
 export default MainContainer;
