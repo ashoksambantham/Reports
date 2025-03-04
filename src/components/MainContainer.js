@@ -12,7 +12,7 @@ import {
   PDFDownloadLink,
   Image,
 } from '@react-pdf/renderer';
-import MyPDF from '../templates/template1';
+
 // A4 Page Styling
 const A4_SIZE = {
   width: '210mm',
@@ -42,14 +42,13 @@ const SECTION_STYLE = {
 
 // Generate Empty Sections
 const createEmptySections = () =>
-  Array.from({ length: 8 }, (_, i) => ({
+  Array.from({ length: 7 }, (_, i) => ({
     id: i + 1,
     content: null,
     text: '',
   }));
 
-const MainContainer = () => {
-  const [pages, setPages] = useState([{ id: 1, sections: createEmptySections() }]);
+const MainContainer = ({ pages, setPages }) => {
   const pdfRef = useRef();
   const pageRefs = useRef([]); // Store refs for each page
 
@@ -64,8 +63,8 @@ const MainContainer = () => {
     ]);
   };
 
-  const updateSectionText = (pageId, sectionId, newText, isDroppedContent) => {
-    console.log(pageId, sectionId, newText, isDroppedContent, 'isDroppedContent');
+  const updateSectionText = (pageId, sectionId, newText, type) => {
+    console.log(type, 'type');
     setPages((prevPages) =>
       prevPages.map((page) =>
         page.id === pageId
@@ -75,8 +74,11 @@ const MainContainer = () => {
                 section.id === sectionId
                   ? {
                       ...section,
-                      content: isDroppedContent ? newText : null,
-                      text: isDroppedContent ? '' : newText,
+                      // content: isDroppedContent ? newText : null,
+                      // text: isDroppedContent ? '' : newText,
+                      content: newText,
+                      text: newText,
+                      type: type,
                     }
                   : section
               ),
@@ -88,27 +90,12 @@ const MainContainer = () => {
 
   return (
     <Box sx={SCROLLABLE_CONTAINER}>
-      {/* Download Button */}
-      <Box textAlign='center' mb={2}>
-        {/* <Button variant='contained' color='primary' onClick={downloadPdf}>
-          Download as PDF
-        </Button> */}
-        <PDFDownloadLink document={<MyPDF pages={pages} />} fileName='document.pdf'>
-          {({ loading }) => (
-            <Button variant='contained' color='primary'>
-              {loading ? 'Generating PDF...' : 'Download as PDF'}
-            </Button>
-          )}
-        </PDFDownloadLink>
-      </Box>
-
-      {/* PDF Container */}
       <Box>
         {pages.map((page, index) => (
           <Box key={page.id} ref={pageRefs.current[index]} sx={A4_SIZE} className='pdf-page'>
             <Grid container spacing={2} sx={{ height: '100%' }}>
-              {page.sections.map((section) => (
-                <Grid item xs={6} key={section.id}>
+              {page.sections.map((section, i) => (
+                <Grid item xs={i === 0 ? 12 : 6} key={section.id}>
                   <DroppableSection
                     section={{ ...section, pageId: page.id }}
                     updateSectionText={updateSectionText}
@@ -131,20 +118,14 @@ const MainContainer = () => {
 };
 
 const DroppableSection = ({ section, updateSectionText }) => {
+  if (section.content) {
+    console.log(section.type, 'section.content.type ');
+  }
   const [{ isOver, canDrop }, drop] = useDrop(() => ({
-    accept: [ItemTypes.TEXT, ItemTypes.IMAGE, ItemTypes.GRAPH],
+    accept: [ItemTypes.TEXT, ItemTypes.IMAGE, ItemTypes.TABLE],
     drop: (item) => {
-      console.log('item', item);
-      if (item.type === 'IMAGE') {
-        updateSectionText(
-          section.pageId, // Pass page ID
-          section.id,
-          `<img src="${item.content.props.src}" alt="Dropped Image" style="max-width: 100%; height: auto;" />`,
-          true
-        );
-      } else {
-        updateSectionText(section.pageId, section.id, item.content, true);
-      }
+      console.log('Item', item);
+      updateSectionText(section.pageId, section.id, item.content, item.type);
     },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
@@ -158,16 +139,28 @@ const DroppableSection = ({ section, updateSectionText }) => {
       sx={{
         ...SECTION_STYLE,
         backgroundColor: isOver && canDrop ? '#f0f0f0' : '#fff',
-        minHeight: '150px', // Ensure it does not collapse
+        minHeight: '150px',
         display: 'flex',
         alignItems: 'stretch',
       }}
     >
       {section.content ? (
-        <div dangerouslySetInnerHTML={{ __html: section.content }} />
+        section.type === 'IMAGE' || section.type === 'TABLE' ? (
+          <div
+            dangerouslySetInnerHTML={{ __html: section.content }}
+            style={{ width: '100%', height: '100%' }}
+          />
+        ) : (
+          <Editor
+            section={section} // Pass dropped text directly
+            updateSectionText={updateSectionText}
+            pageId={section.pageId}
+            sectionId={section.id}
+          />
+        )
       ) : (
         <Editor
-          content={section.content}
+          section={''} // Allow typing if nothing is dropped
           updateSectionText={updateSectionText}
           pageId={section.pageId}
           sectionId={section.id}
