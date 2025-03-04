@@ -11,6 +11,14 @@
   border-radius: 8px; */
   display: flex;
 }
+.ql-editor {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: break-word !important;
+  display: block !important;
+  font-size: 16px;
+  min-height: 100px;
+}
 
 .output {
   margin-top: 20px;
