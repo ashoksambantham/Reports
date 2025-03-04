@@ -3,9 +3,9 @@ import React, { useState, useEffect } from 'react';
 import ReactQuill from 'react-quill-new';
 // import 'react-quill/dist/quill.snow.css';
 import Quill from 'quill';
-import BetterTable from 'quill-better-table';
+// import BetterTable from 'quill-better-table';
 
-Quill.register('modules/better-table', BetterTable);
+// Quill.register('modules/better-table', BetterTable);
 
 const Editor = ({ section, updateSectionText, pageId, sectionId }) => {
   console.log(section, 'section');

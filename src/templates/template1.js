@@ -1,6 +1,10 @@
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
-import { JSDOM } from 'jsdom';
+import parse from 'html-react-parser';
+
+// Sample HTML content
+const htmlContent =
+  '<h1>Hello PDF</h1><p>This is a <b>bold</b> text with a <i>italic</i> word.</p>';
 
 // PDF Styles
 const styles = StyleSheet.create({
@@ -67,64 +71,42 @@ const styles = StyleSheet.create({
 });
 
 // **Function to Convert HTML to React-PDF Components**
-const renderHTMLContent = (html) => {
-  const dom = new JSDOM(html);
-  const nodes = dom.window.document.body.childNodes;
-
-  const elements = [];
-
-  nodes.forEach((node, index) => {
-    if (node.nodeName === 'P') {
-      elements.push(
-        <Text key={index} style={styles.text}>
-          {node.textContent}
-        </Text>
-      );
-    } else if (node.nodeName === 'STRONG' || node.nodeName === 'B') {
-      elements.push(
-        <Text key={index} style={styles.boldText}>
-          {node.textContent}
-        </Text>
-      );
-    } else if (node.nodeName === 'H1') {
-      elements.push(
-        <Text key={index} style={styles.heading1}>
-          {node.textContent}
-        </Text>
-      );
-    } else if (node.nodeName === 'H2') {
-      elements.push(
-        <Text key={index} style={styles.heading2}>
-          {node.textContent}
-        </Text>
-      );
-    } else if (node.nodeName === 'IMG') {
-      const src = node.getAttribute('src');
-      if (src) {
-        elements.push(<Image key={index} src={src} style={styles.image} />);
+// Function to convert parsed HTML to React-PDF components
+const renderHtmlToPdf = (html) => {
+  return parse(html, {
+    replace: (domNode) => {
+      if (domNode.type === 'tag') {
+        switch (domNode.name) {
+          case 'h1':
+            return (
+              <Text style={{ fontSize: 20, fontWeight: 'bold' }}>{domNode.children[0].data}</Text>
+            );
+          case 'p':
+            return <Text style={{ marginBottom: 10 }}>{domNode.children[0].data}</Text>;
+          case 'b':
+            return <Text style={{ fontWeight: 'bold' }}>{domNode.children[0].data}</Text>;
+          case 'i':
+            return <Text style={{ fontStyle: 'italic' }}>{domNode.children[0].data}</Text>;
+          default:
+            return <Text>{domNode.children[0]?.data || ''}</Text>;
+        }
       }
-    } else {
-      elements.push(
-        <Text key={index} style={styles.text}>
-          {node.textContent}
-        </Text>
-      );
-    }
+    },
   });
-
-  return elements;
 };
 
 // **PDF Document Component**
 const MyPDF = ({ pages }) => (
   <Document>
+    {/* <Page size='A4' style={styles.page}>
+      <View>{renderHtmlToPdf(htmlContent)}</View>
+    </Page> */}
     {pages.map((page, pageIndex) => (
       <Page size='A4' style={styles.page} key={pageIndex}>
-        <View>
-          {page.sections.map((section, sectionIndex) => (
-            <View key={sectionIndex}>{renderHTMLContent(section.text)}</View>
-          ))}
-        </View>
+        {page.sections.map((section, sectionIndex) => (
+          <View key={sectionIndex}>{renderHtmlToPdf(section.text)}</View>
+        ))}
+
         <View style={styles.footer}>
           <Text style={styles.pageNumber}>{pageIndex + 1}</Text>
           <Text>

@@ -20,7 +20,7 @@ const Sidebar = () => {
   // 🟢 Text (With Bold Styling)
   const [{ isDragging: textDragging }, dragText] = CreateDrag(
     ItemTypes.TEXT,
-    '<p><strong>Bold Text:</strong> This is a rich text example.</p>'
+    '<h1>Hello PDF</h1><p>This is a <b>bold</b> text with a <i>italic</i> word.</p>'
   );
 
   // 🟢 Image (Using Placeholder)
@@ -47,7 +47,8 @@ const Sidebar = () => {
       >
         <div
           dangerouslySetInnerHTML={{
-            __html: '<p><strong>Bold Text:</strong> This is a rich text example.</p>',
+            __html:
+              '<h1>Hello PDF</h1><p>This is a <b>bold</b> text with a <i>italic</i> word.</p>',
           }}
         />
       </div>
