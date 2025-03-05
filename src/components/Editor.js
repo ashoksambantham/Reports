@@ -46,7 +46,7 @@ const Editor = ({ section, updateSectionText, pageId, sectionId }) => {
         onChange={handleChange}
         theme='bubble'
         placeholder='Write something...'
-        modules={modules}
+        modules={{ toolbar: true }}
       />
     </div>
   );

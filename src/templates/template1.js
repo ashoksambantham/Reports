@@ -104,7 +104,10 @@ const MyPDF = ({ pages }) => (
     {pages.map((page, pageIndex) => (
       <Page size='A4' style={styles.page} key={pageIndex}>
         {page.sections.map((section, sectionIndex) => (
-          <View key={sectionIndex}>{renderHtmlToPdf(section.text)}</View>
+          <View key={sectionIndex}>
+            {section.text}
+            {/* <Text style={styles.reportText}> {section.text}</Text> */}
+          </View>
         ))}
 
         <View style={styles.footer}>

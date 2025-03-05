@@ -3,15 +3,6 @@ import { useDrop } from 'react-dnd';
 import { ItemTypes } from './Sidebar';
 import { Grid, Box, Button } from '@mui/material';
 import Editor from './Editor';
-import {
-  Document,
-  Page,
-  Text,
-  View,
-  StyleSheet,
-  PDFDownloadLink,
-  Image,
-} from '@react-pdf/renderer';
 
 // A4 Page Styling
 const A4_SIZE = {
@@ -64,7 +55,6 @@ const MainContainer = ({ pages, setPages }) => {
   };
 
   const updateSectionText = (pageId, sectionId, newText, type) => {
-    console.log(type, 'type');
     setPages((prevPages) =>
       prevPages.map((page) =>
         page.id === pageId
